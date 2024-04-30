@@ -124,7 +124,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",
-    "@types/mime": "^3.0.0",
+    "@types/mime": "^4.0.0",
     "@types/node": "^10.17.60",
     "app-root-path": "^3.1.0",
     "assert": "^2.0.0",
