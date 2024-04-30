@@ -31,11 +31,13 @@ npm i fs-zoo
 
 ## See also
 
+- [`memfs`][memfs] - creates an in-memory file system, with Node.js `fs` API
 - [`unionfs`][unionfs] - creates a union of multiple filesystem volumes
 - [`fs-monkey`][fs-monkey] - monkey-patches Node's `fs` module and `require` function
 - [`linkfs`][linkfs] - redirects filesystem paths
 - [`spyfs`][spyfs] - spies on filesystem actions
 
+[memfs]: https://github.com/streamich/memfs
 [unionfs]: https://github.com/streamich/unionfs
 [fs-monkey]: https://github.com/streamich/fs-monkey
 [linkfs]: https://github.com/streamich/linkfs
