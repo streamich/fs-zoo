@@ -120,7 +120,8 @@
     "memfs": "^4.9.2",
     "sonic-forest": "^1.0.0",
     "thingies": "^2.1.0",
-    "tslib": "^2.0.0"
+    "tslib": "^2.0.0",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",
