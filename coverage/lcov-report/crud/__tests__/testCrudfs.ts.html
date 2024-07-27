@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.64% </span>
+                <span class="strong">99.65% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>281/282</span>
+                <span class='fraction'>290/291</span>
             </div>
         
             
@@ -39,14 +39,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>59/59</span>
+                <span class='fraction'>61/61</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">99.63% </span>
+                <span class="strong">99.64% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>275/276</span>
+                <span class='fraction'>284/285</span>
             </div>
         
             
@@ -484,13 +484,27 @@
 <a name='L419'></a><a href='#L419'>419</a>
 <a name='L420'></a><a href='#L420'>420</a>
 <a name='L421'></a><a href='#L421'>421</a>
-<a name='L422'></a><a href='#L422'>422</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L422'></a><a href='#L422'>422</a>
+<a name='L423'></a><a href='#L423'>423</a>
+<a name='L424'></a><a href='#L424'>424</a>
+<a name='L425'></a><a href='#L425'>425</a>
+<a name='L426'></a><a href='#L426'>426</a>
+<a name='L427'></a><a href='#L427'>427</a>
+<a name='L428'></a><a href='#L428'>428</a>
+<a name='L429'></a><a href='#L429'>429</a>
+<a name='L430'></a><a href='#L430'>430</a>
+<a name='L431'></a><a href='#L431'>431</a>
+<a name='L432'></a><a href='#L432'>432</a>
+<a name='L433'></a><a href='#L433'>433</a>
+<a name='L434'></a><a href='#L434'>434</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">480x</span>
-<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">496x</span>
+<span class="cline-any cline-yes">496x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">8x</span>
@@ -628,6 +642,15 @@
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
@@ -905,7 +928,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { of } from 'thingies';
+import { fromStream } from '@jsonjoy.com/util/lib/streams/fromStream';
+import { bufferToUint8Array } from '@jsonjoy.com/util/lib/buffers/bufferToUint8Array';
 import type { CrudApi, CrudCollectionEntry } from '../types';
 &nbsp;
 export type Setup = () =&gt; {
@@ -1079,6 +1105,16 @@ export const testCrudfs = (setup: Setup) =&gt; {
     });
   });
 &nbsp;
+  describe('.getStream()', () =&gt; {
+    test('can fetch an existing resource as stream', async () =&gt; {
+      const { crud } = setup();
+      await crud.put(['foo'], 'bar', b('abc'));
+      const stream = await crud.getStream(['foo'], 'bar');
+      const blob = bufferToUint8Array((await fromStream(stream)) as any);
+      expect(blob).toStrictEqual(b('abc'));
+    });
+  });
+&nbsp;
   describe('.del()', () =&gt; {
     test('throws if the type is not valid', async () =&gt; {
       const { crud } = setup();
@@ -1203,8 +1239,8 @@ export const testCrudfs = (setup: Setup) =&gt; {
       await crud.put(['foo', 'b'], 'xyz', b('3'));
       const info = await crud.info(['foo', 'a']);
       expect(info.type).toBe('collection');
-      await crud.drop(['foo', 'a']);
-      const [, e<span class="cstat-no" title="statement not covered" >rr] = await of(crud.info(['foo'</span>, 'a']));
+      await crud<span class="cstat-no" title="statement not covered" >.drop(['foo', 'a']);</span>
+      const [, err] = await of(crud.info(['foo', 'a']));
       expect(err).toBeInstanceOf(DOMException);
       expect((&lt;any&gt;err).name).toBe('CollectionNotFound');
     });
@@ -1333,7 +1369,7 @@ export const testCrudfs = (setup: Setup) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-07-27T08:22:39.970Z
+                at 2024-07-27T11:10:25.095Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
