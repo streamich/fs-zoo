@@ -99,6 +99,18 @@ export const testCrudfs = (setup: Setup) => {
       });
     });
 
+    test('can write at the beginning of file and throw if missing', async () => {
+      const { crud, snapshot } = setup();
+      await crud.put(['a', 'b'], 'bar', b('abc'));
+      await crud.put(['a', 'b'], 'bar', b('.'), {pos: 0, throwIf: 'missing'});
+      expect(snapshot()).toStrictEqual({
+        '/a/b/bar': '.bc',
+      });
+      const [, err] = await of(crud.put(['a', 'b'], 'MISSING', b('.'), {pos: 0, throwIf: 'missing'}));
+      expect(err).toBeInstanceOf(DOMException);
+      await crud.put(['a', 'b'], 'MISSING2', b('.'), {pos: 0});
+    });
+
     test('can append to the file', async () => {
       const { crud, snapshot } = setup();
       await crud.put(['a', 'b'], 'bar', b('abc'));
@@ -108,6 +120,17 @@ export const testCrudfs = (setup: Setup) => {
       expect(snapshot()).toStrictEqual({
         '/a/b/bar': 'abc123',
       });
+    });
+
+    test('can append to the file and throw if missing', async () => {
+      const { crud, snapshot } = setup();
+      await crud.put(['a', 'b'], 'bar', b('abc'));
+      await crud.put(['a', 'b'], 'bar', b('.'), {pos: -1, throwIf: 'missing'});
+      expect(snapshot()).toStrictEqual({
+        '/a/b/bar': 'abc.',
+      });
+      const [, err] = await of(crud.put(['a', 'b'], 'MISSING', b('.'), {pos: -1, throwIf: 'missing'}));
+      expect(err).toBeInstanceOf(DOMException);
     });
   });
 

@@ -4,7 +4,7 @@ import { FLAG } from 'memfs/lib/consts/FLAG';
 import { newExistsError, newFile404Error, newFolder404Error, newMissingError } from '../fsa-to-crud/util';
 import type { FsPromisesApi } from 'memfs/lib/node/types';
 import type * as crud from '../crud/types';
-import type { IDirent } from 'memfs/lib/node/types/misc';
+import type { IDirent, IFileHandle } from 'memfs/lib/node/types/misc';
 
 export interface NodeCrudOptions {
   readonly fs: FsPromisesApi;
@@ -57,27 +57,43 @@ export class NodeCrud implements crud.CrudApi {
     const fs = this.fs;
     if (dir.length > 1) await fs.mkdir(dir, { recursive: true });
     const filename = dir + id;
-    switch (options?.throwIf) {
-      case 'exists': {
-        try {
-          await fs.writeFile(filename, data, { flag: FLAG.O_CREAT | FLAG.O_EXCL });
-        } catch (error) {
+    const throwIf = options?.throwIf;
+    let pos = options?.pos;
+    let flags = 0;
+    if (typeof pos === 'undefined') flags = flags | FLAG.O_TRUNC;
+    if (throwIf) {
+      if (throwIf === 'exists') flags = flags | FLAG.O_CREAT | FLAG.O_EXCL;
+      else if (throwIf === 'missing') flags = flags | FLAG.O_RDWR;
+    } else flags = flags | FLAG.O_RDWR | FLAG.O_CREAT;
+    let handle: IFileHandle | undefined;
+    try {
+      handle = await fs.open(filename, flags);
+    } catch (error) {
+      switch (throwIf) {
+        case 'exists': {
           if (error && typeof error === 'object' && error.code === 'EEXIST') throw newExistsError();
-          throw error;
         }
+        case 'missing': {
+          if (error && typeof error === 'object' && error.code === 'ENOENT') throw newMissingError();
+        }
+      }
+      throw error;
+    }
+    switch (typeof pos) {
+      case 'undefined': {
+        await handle.write(data);
         break;
       }
-      case 'missing': {
-        try {
-          await fs.writeFile(filename, data, { flag: FLAG.O_RDWR });
-        } catch (error) {
-          if (error && typeof error === 'object' && error.code === 'ENOENT') throw newMissingError();
-          throw error;
+      case 'number': {
+        if (pos === -1) {
+          const stats = await handle.stat();
+          pos = stats.size as number;
         }
+        await handle.write(data, 0, data.byteLength, pos);
         break;
       }
       default: {
-        await fs.writeFile(filename, data);
+        throw new Error(`Invalid position: ${pos}`);
       }
     }
   };
