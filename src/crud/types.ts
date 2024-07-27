@@ -25,7 +25,7 @@ export interface CrudApi {
    * @param id Id of the resource, document name.
    * @returns Blob content of the resource.
    */
-  getFile: (collection: CrudCollection, id: string) => Promise<File>;
+  getStream: (collection: CrudCollection, id: string) => Promise<ReadableStream>;
 
   /**
    * Deletes a resource.

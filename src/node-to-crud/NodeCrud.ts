@@ -4,7 +4,7 @@ import { FLAG } from 'memfs/lib/consts/FLAG';
 import { newExistsError, newFile404Error, newFolder404Error, newMissingError } from '../fsa-to-crud/util';
 import type { FsPromisesApi } from 'memfs/lib/node/types';
 import type * as crud from '../crud/types';
-import type { IDirent, IFileHandle } from 'memfs/lib/node/types/misc';
+import type { IDirent, IFileHandle, TFlags } from 'memfs/lib/node/types/misc';
 
 export interface NodeCrudOptions {
   readonly fs: FsPromisesApi;
@@ -98,14 +98,34 @@ export class NodeCrud implements crud.CrudApi {
     }
   };
 
-  public readonly get = async (collection: crud.CrudCollection, id: string): Promise<Uint8Array> => {
+  public async _file(collection: crud.CrudCollection, id: string, flags: TFlags): Promise<IFileHandle> {
     assertType(collection, 'get', 'crudfs');
     assertName(id, 'get', 'crudfs');
     const dir = await this.checkDir(collection);
     const filename = dir + id;
     const fs = this.fs;
+    return await fs.open(filename, flags);
+  };
+
+  public readonly getStream = async (collection: crud.CrudCollection, id: string): Promise<ReadableStream> => {
     try {
-      const buf = (await fs.readFile(filename)) as Buffer;
+      const handle = await this._file(collection, id, FLAG.O_RDONLY);
+      return handle.readableWebStream();
+    } catch (error) {
+      if (error && typeof error === 'object') {
+        switch (error.code) {
+          case 'ENOENT':
+            throw newFile404Error(collection, id);
+        }
+      }
+      throw error;
+    }
+  };
+
+  public readonly get = async (collection: crud.CrudCollection, id: string): Promise<Uint8Array> => {
+    try {
+      const handle = await this._file(collection, id, FLAG.O_RDONLY);
+      const buf = await handle.readFile() as Buffer;
       return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
     } catch (error) {
       if (error && typeof error === 'object') {

@@ -98,16 +98,21 @@ export class FsaCrud implements crud.CrudApi {
     await writable.close();
   };
 
-  public readonly getFile = async (collection: crud.CrudCollection, id: string): Promise<File> => {
+  public async _get(collection: crud.CrudCollection, id: string): Promise<File> {
     assertType(collection, 'get', 'crudfs');
     assertName(id, 'get', 'crudfs');
     const [, file] = await this.__resolve(collection, id);
     return await file.getFile();
+  }
+
+  public readonly getStream = async (collection: crud.CrudCollection, id: string): Promise<ReadableStream> => {
+    const file = await this._get(collection, id);
+    return file.stream();
   };
 
   public readonly get = async (collection: crud.CrudCollection, id: string): Promise<Uint8Array> => {
-    const blob = await this.getFile(collection, id);
-    const buffer = await blob.arrayBuffer();
+    const file = await this._get(collection, id);
+    const buffer = await file.arrayBuffer();
     return new Uint8Array(buffer);
   };
 
