@@ -105,7 +105,7 @@ export class NodeCrud implements crud.CrudApi {
     const filename = dir + id;
     const fs = this.fs;
     return await fs.open(filename, flags);
-  };
+  }
 
   public readonly getStream = async (collection: crud.CrudCollection, id: string): Promise<ReadableStream> => {
     try {
@@ -125,7 +125,7 @@ export class NodeCrud implements crud.CrudApi {
   public readonly get = async (collection: crud.CrudCollection, id: string): Promise<Uint8Array> => {
     try {
       const handle = await this._file(collection, id, FLAG.O_RDONLY);
-      const buf = await handle.readFile() as Buffer;
+      const buf = (await handle.readFile()) as Buffer;
       return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
     } catch (error) {
       if (error && typeof error === 'object') {

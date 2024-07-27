@@ -179,7 +179,7 @@ export const testCrudfs = (setup: Setup) => {
       const { crud } = setup();
       await crud.put(['foo'], 'bar', b('abc'));
       const stream = await crud.getStream(['foo'], 'bar');
-      const blob = bufferToUint8Array(await fromStream(stream) as any);
+      const blob = bufferToUint8Array((await fromStream(stream)) as any);
       expect(blob).toStrictEqual(b('abc'));
     });
   });
