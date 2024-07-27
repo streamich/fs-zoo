@@ -71,6 +71,44 @@ export const testCrudfs = (setup: Setup) => {
         '/a/b/bar': '3',
       });
     });
+
+    test('overwrites existing data', async () => {
+      const { crud, snapshot } = setup();
+      await crud.put(['a', 'b'], 'bar', b('abc'));
+      await crud.put(['a', 'b'], 'bar', b('.'));
+      expect(snapshot()).toStrictEqual({
+        '/a/b/bar': '.',
+      });
+    });
+
+    test('can write at offset', async () => {
+      const { crud, snapshot } = setup();
+      await crud.put(['a', 'b'], 'bar', b('abc'));
+      await crud.put(['a', 'b'], 'bar', b('.'), {pos: 1});
+      expect(snapshot()).toStrictEqual({
+        '/a/b/bar': 'a.c',
+      });
+    });
+
+    test('can write at the beginning of file', async () => {
+      const { crud, snapshot } = setup();
+      await crud.put(['a', 'b'], 'bar', b('abc'));
+      await crud.put(['a', 'b'], 'bar', b('.'), {pos: 0});
+      expect(snapshot()).toStrictEqual({
+        '/a/b/bar': '.bc',
+      });
+    });
+
+    test('can append to the file', async () => {
+      const { crud, snapshot } = setup();
+      await crud.put(['a', 'b'], 'bar', b('abc'));
+      await crud.put(['a', 'b'], 'bar', b('1'), {pos: -1});
+      await crud.put(['a', 'b'], 'bar', b('2'), {pos: -1});
+      await crud.put(['a', 'b'], 'bar', b('3'), {pos: -1});
+      expect(snapshot()).toStrictEqual({
+        '/a/b/bar': 'abc123',
+      });
+    });
   });
 
   describe('.get()', () => {

@@ -76,8 +76,25 @@ export class FsaCrud implements crud.CrudApi {
         file = await dir.getFileHandle(id, { create: true });
       }
     }
-    const writable = await file!.createWritable();
-    await writable.write(data);
+    let pos = options?.pos;
+    const writable = await file!.createWritable({keepExistingData: typeof pos !== 'undefined'});
+    switch (typeof pos) {
+      case 'undefined': {
+        await writable.write(data);
+        break;
+      }
+      case 'number': {
+        if (pos === -1) {
+          const blob = await file.getFile();
+          pos = blob.size;
+        }
+        await writable.write({type: 'write', data, position: pos});
+        break;
+      }
+      default: {
+        throw new Error(`Invalid position: ${pos}`);
+      }
+    } 
     await writable.close();
   };
 
