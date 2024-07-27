@@ -24,7 +24,7 @@ export class FsaNodeFsOpenFile {
     public readonly file: fsa.IFileSystemFileHandle,
     public readonly filename: string,
   ) {
-    this.keepExistingData = !!(flags & FLAG.O_APPEND);
+    this.keepExistingData = !(flags & FLAG.O_TRUNC);
   }
 
   public async close(): Promise<void> {}
