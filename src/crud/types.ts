@@ -74,7 +74,18 @@ export interface CrudApi {
 export type CrudCollection = string[];
 
 export interface CrudPutOptions {
+  /**
+   * Specifies conditions for throwing an error.
+   */
   throwIf?: 'exists' | 'missing';
+
+  /**
+   * Specifies the position where to write the data. If not set, or set to
+   * `undefined` the existing resource is discarded and the new data replaces
+   * it. If set, the new data will be inserted at the specified position. If
+   * set, to `-1` the new data will be appended to the existing resource.
+   */
+  pos?: undefined | number | -1;
 }
 
 export interface CrudCollectionEntry {
