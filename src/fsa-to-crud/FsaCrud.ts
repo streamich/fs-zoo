@@ -28,7 +28,7 @@ export class FsaCrud implements crud.CrudApi {
     }
   }
 
-  protected async getFile(
+  protected async __resolve(
     collection: crud.CrudCollection,
     id: string,
   ): Promise<[dir: fsa.IFileSystemDirectoryHandle, file: fsa.IFileSystemFileHandle]> {
@@ -98,12 +98,21 @@ export class FsaCrud implements crud.CrudApi {
     await writable.close();
   };
 
-  public readonly get = async (collection: crud.CrudCollection, id: string): Promise<Uint8Array> => {
+  public async _get(collection: crud.CrudCollection, id: string): Promise<File> {
     assertType(collection, 'get', 'crudfs');
     assertName(id, 'get', 'crudfs');
-    const [, file] = await this.getFile(collection, id);
-    const blob = await file.getFile();
-    const buffer = await blob.arrayBuffer();
+    const [, file] = await this.__resolve(collection, id);
+    return await file.getFile();
+  }
+
+  public readonly getStream = async (collection: crud.CrudCollection, id: string): Promise<ReadableStream> => {
+    const file = await this._get(collection, id);
+    return file.stream();
+  };
+
+  public readonly get = async (collection: crud.CrudCollection, id: string): Promise<Uint8Array> => {
+    const file = await this._get(collection, id);
+    const buffer = await file.arrayBuffer();
     return new Uint8Array(buffer);
   };
 
@@ -111,7 +120,7 @@ export class FsaCrud implements crud.CrudApi {
     assertType(collection, 'del', 'crudfs');
     assertName(id, 'del', 'crudfs');
     try {
-      const [dir] = await this.getFile(collection, id);
+      const [dir] = await this.__resolve(collection, id);
       await dir.removeEntry(id, { recursive: false });
     } catch (error) {
       if (!silent) throw error;
@@ -122,7 +131,7 @@ export class FsaCrud implements crud.CrudApi {
     assertType(collection, 'info', 'crudfs');
     if (id) {
       assertName(id, 'info', 'crudfs');
-      const [, file] = await this.getFile(collection, id);
+      const [, file] = await this.__resolve(collection, id);
       const blob = await file.getFile();
       return {
         type: 'resource',

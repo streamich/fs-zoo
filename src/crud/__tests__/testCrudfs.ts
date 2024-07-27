@@ -1,4 +1,6 @@
 import { of } from 'thingies';
+import { fromStream } from '@jsonjoy.com/util/lib/streams/fromStream';
+import { bufferToUint8Array } from '@jsonjoy.com/util/lib/buffers/bufferToUint8Array';
 import type { CrudApi, CrudCollectionEntry } from '../types';
 
 export type Setup = () => {
@@ -168,6 +170,16 @@ export const testCrudfs = (setup: Setup) => {
       const { crud } = setup();
       await crud.put(['foo'], 'bar', b('abc'));
       const blob = await crud.get(['foo'], 'bar');
+      expect(blob).toStrictEqual(b('abc'));
+    });
+  });
+
+  describe('.getStream()', () => {
+    test('can fetch an existing resource as stream', async () => {
+      const { crud } = setup();
+      await crud.put(['foo'], 'bar', b('abc'));
+      const stream = await crud.getStream(['foo'], 'bar');
+      const blob = bufferToUint8Array((await fromStream(stream)) as any);
       expect(blob).toStrictEqual(b('abc'));
     });
   });
