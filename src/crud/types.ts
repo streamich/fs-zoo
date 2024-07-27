@@ -19,6 +19,15 @@ export interface CrudApi {
   get: (collection: CrudCollection, id: string) => Promise<Uint8Array>;
 
   /**
+   * Retrieves the content of a resource as a file.
+   *
+   * @param collection Type of the resource, collection name.
+   * @param id Id of the resource, document name.
+   * @returns Blob content of the resource.
+   */
+  getFile: (collection: CrudCollection, id: string) => Promise<File>;
+
+  /**
    * Deletes a resource.
    *
    * @param collection Type of the resource, collection name.
